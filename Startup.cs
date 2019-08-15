@@ -2,6 +2,8 @@ using System;
 using System.Text;
 using ABM_CMS.Database;
 using ABM_CMS.Helpers;
+using ABM_CMS.Interfaces;
+using ABM_CMS.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -93,10 +95,13 @@ namespace ABM_CMS
             {
                 options.AddPolicy("RequireLoggedId",
                     policy => policy.RequireRole("Admin", "User", "Moderator").RequireAuthenticatedUser());
-                
+
                 options.AddPolicy("RequireAdminRole",
                     policy => policy.RequireRole("Admin").RequireAuthenticatedUser());
             });
+            
+            //Add Custom Services
+            services.AddTransient<IMessageSender, EmailSender>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -114,7 +119,7 @@ namespace ABM_CMS
             }
 
             app.UseCors("EnableCORS");
-            
+
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseSpaStaticFiles();

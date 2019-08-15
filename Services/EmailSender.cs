@@ -8,6 +8,7 @@ namespace ABM_CMS.Services
 {
     public class EmailSender : IMessageSender
     {
+        //MailKit
         public async Task Send(IdentityUser user, string subject, string message)
         {
             var emailMessage = new MimeMessage();

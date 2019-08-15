@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace ABM_CMS.Interfaces
 {
-    public interface IMessageSender
+   public interface IMessageSender
     {
         Task Send(IdentityUser user, string subject, string message);
     }
