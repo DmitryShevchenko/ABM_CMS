@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using ABM_CMS.Interfaces;
 using MailKit.Net.Smtp;
@@ -11,6 +12,7 @@ namespace ABM_CMS.Services
         //MailKit
         public async Task Send(IdentityUser user, string subject, string message)
         {
+            throw new NotImplementedException("Add_Smtp_Client");
             var emailMessage = new MimeMessage();
             
             emailMessage.From.Add(new MailboxAddress("Администрация", "login@gmail.com"));
@@ -24,8 +26,7 @@ namespace ABM_CMS.Services
             using (var client = new SmtpClient())
             {
                 await client.ConnectAsync("smtp.gmail.com", 25, false);
-                await client.AuthenticateAsync("login@gmail.com", "password");
-                await client.SendAsync(emailMessage);
+                await client.AuthenticateAsync("login@gmail.com", "password");await client.SendAsync(emailMessage);
                 
                 await client.DisconnectAsync(true);
             }

@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using ABM_CMS.Interfaces;
 using Microsoft.AspNetCore.Identity;
@@ -12,6 +13,7 @@ namespace ABM_CMS.Services
         //https://www.twilio.com/docs/sms/quickstart/csharp-dotnet-framework
         public async Task Send(IdentityUser user, string subject, string message)
         {
+            throw new NotImplementedException("Register on twilio.com and get [AccountSid and AuthToken]");
             // Find your Account Sid and Token at twilio.com/console
             // DANGER! This is insecure. See http://twil.io/secure
             const string accountSid = "AXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
