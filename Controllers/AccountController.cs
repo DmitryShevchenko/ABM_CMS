@@ -5,9 +5,13 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using ABM_CMS.Helpers;
+using ABM_CMS.Interfaces;
 using ABM_CMS.Models;
+using ABM_CMS.Services;
+using Hangfire;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -20,13 +24,15 @@ namespace ABM_CMS.Controllers
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly AppSettings _appSettings;
+        public readonly IMessageSender _messageSender;
 
         public AccountController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager,
-            AppSettings appSettings)
+            AppSettings appSettings, IMessageSender messageSender)
         {
             _appSettings = appSettings;
             _userManager = userManager;
             _signInManager = signInManager;
+            _messageSender = messageSender;
         }
 
         [HttpPost("[action]")]
@@ -48,7 +54,7 @@ namespace ABM_CMS.Controllers
             {
                 await _userManager.AddToRoleAsync(user, "User");
                 //ADD Sending Confirmation Email
-
+                
                 return Ok(new
                     {userName = user.UserName, email = user.Email, status = 1, message = "Registration Successful"});
             }
@@ -107,7 +113,6 @@ namespace ABM_CMS.Controllers
                     userRole = roles.FirstOrDefault()
                 });
             }
-
             //return ERR
             ModelState.AddModelError("", "UserName/Password was not fount");
             return Unauthorized(new

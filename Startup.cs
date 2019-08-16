@@ -3,7 +3,10 @@ using System.Text;
 using ABM_CMS.Database;
 using ABM_CMS.Helpers;
 using ABM_CMS.Interfaces;
+using ABM_CMS.Models;
 using ABM_CMS.Services;
+using Hangfire;
+using Hangfire.SqlServer;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -100,8 +103,29 @@ namespace ABM_CMS
                     policy => policy.RequireRole("Admin").RequireAuthenticatedUser());
             });
             
+            //Hangfire
+            services.AddHangfire(configuration => configuration
+                .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UseSqlServerStorage(Configuration.GetConnectionString("HangfireConnection"), new SqlServerStorageOptions
+                {
+                    CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+                    SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+                    QueuePollInterval = TimeSpan.Zero,
+                    UseRecommendedIsolationLevel = true,
+                    UsePageLocksOnDequeue = true,
+                    DisableGlobalLocks = true
+                }));
+            services.AddHangfireServer();
+            
             //Add Custom Services
             services.AddTransient<IMessageSender, EmailSender>();
+           // services.AddTransient<IMessageSender, SmsSender>();
+           
+           //Options
+           services.AddOptions();
+           services.Configure<EmailSmtp>(Configuration.GetSection("EmailSenderSmtp"));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -117,13 +141,17 @@ namespace ABM_CMS
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
-
+            
+            //Hangfire
+            app.UseHangfireDashboard();
+            
             app.UseCors("EnableCORS");
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
             app.UseAuthentication();
+            
 
             app.UseMvc(routes =>
             {

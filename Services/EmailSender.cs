@@ -1,36 +1,47 @@
-using System;
+using System.Net;
+using System.Net.Mail;
 using System.Threading.Tasks;
+using ABM_CMS.Helpers;
 using ABM_CMS.Interfaces;
-using MailKit.Net.Smtp;
 using Microsoft.AspNetCore.Identity;
-using MimeKit;
+using Microsoft.Extensions.Options;
 
 namespace ABM_CMS.Services
 {
     public class EmailSender : IMessageSender
     {
-        //MailKit
+        public readonly EmailSmtp EmailSmtp;
+
+        public EmailSender(IOptions<EmailSmtp> options)
+        {
+            EmailSmtp = options.Value;
+        }
+
+        // https://www.hangfire.io/
         public async Task Send(IdentityUser user, string subject, string message)
         {
-            throw new NotImplementedException("Add_Smtp_Client");
-            var emailMessage = new MimeMessage();
-            
-            emailMessage.From.Add(new MailboxAddress("Администрация", "login@gmail.com"));
-            emailMessage.To.Add(new MailboxAddress("", user.Email));
-            emailMessage.Subject = subject;
-            emailMessage.Body = new TextPart(MimeKit.Text.TextFormat.Html)
+            using (var email = new MailMessage()
             {
-                Text = message,
-            };
-            
-            using (var client = new SmtpClient())
+                From = new MailAddress(EmailSmtp.AppEmail),
+                To = {new MailAddress(user.Email)},
+                Subject = subject,
+                Body = message,
+            })
             {
-                await client.ConnectAsync("smtp.gmail.com", 25, false);
-                await client.AuthenticateAsync("login@gmail.com", "password");await client.SendAsync(emailMessage);
-                
-                await client.DisconnectAsync(true);
-            }
+                using (var smtp = new SmtpClient())
+                {
+                    smtp.Host = EmailSmtp.Host;
+                    smtp.Port = EmailSmtp.Port;
+                    smtp.EnableSsl = true;
+                    smtp.UseDefaultCredentials = false;
+                    smtp.Credentials = new NetworkCredential(EmailSmtp.AppEmail, EmailSmtp.Password);
+                    smtp.DeliveryMethod = SmtpDeliveryMethod.Network;
+                    
 
+                    smtp.Send(email);
+                }
+            }
         }
     }
 }
+
