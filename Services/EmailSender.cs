@@ -37,8 +37,8 @@ namespace ABM_CMS.Services
                     smtp.Credentials = new NetworkCredential(EmailSmtp.AppEmail, EmailSmtp.Password);
                     smtp.DeliveryMethod = SmtpDeliveryMethod.Network;
                     
-
-                    smtp.Send(email);
+                    //smtp.Send(email);
+                   await smtp.SendMailAsync(email);
                 }
             }
         }

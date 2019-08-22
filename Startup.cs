@@ -36,9 +36,6 @@ namespace ABM_CMS
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
             // In production, the React files will be served from this directory
-            services.AddSpaStaticFiles(configuration => { configuration.RootPath = "ClientApp/build"; });
-
-            // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(options => options.RootPath = "ClientApp/build");
 
             //Enable CORS
@@ -66,7 +63,8 @@ namespace ABM_CMS
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
                 options.Lockout.MaxFailedAccessAttempts = 5;
                 options.Lockout.AllowedForNewUsers = true;
-            });
+            }).AddEntityFrameworkStores<AppDbContext>()
+                .AddDefaultTokenProviders();
 
             //Configure strongly typed settings objects 
             var appSettingsSection = Configuration.GetSection("AppSettings");

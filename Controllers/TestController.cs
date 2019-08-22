@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.IO;
 using ABM_CMS.Interfaces;
 using Hangfire;
 using Microsoft.AspNetCore.Identity;
@@ -20,5 +22,7 @@ namespace ABM_CMS.Controllers
             BackgroundJob.Enqueue<IMessageSender>(x => x.Send(new IdentityUser(){UserName = "Dima", Email = "dima_che@ukr.net", PhoneNumber = "+380990049919"}, "subject", "message"));
             return Ok();
         }
+
+       
     }
 }

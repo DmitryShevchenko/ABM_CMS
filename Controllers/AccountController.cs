@@ -14,6 +14,7 @@ using ABM_CMS.Services;
 using Hangfire;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace ABM_CMS.Controllers
@@ -24,12 +25,12 @@ namespace ABM_CMS.Controllers
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly AppSettings _appSettings;
-        public readonly IMessageSender _messageSender;
+        private readonly IMessageSender _messageSender;
 
         public AccountController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager,
-            AppSettings appSettings, IMessageSender messageSender)
+            IOptions<AppSettings> appSettings, IMessageSender messageSender)
         {
-            _appSettings = appSettings;
+            _appSettings = appSettings.Value;
             _userManager = userManager;
             _signInManager = signInManager;
             _messageSender = messageSender;

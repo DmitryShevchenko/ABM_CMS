@@ -10,6 +10,7 @@ namespace ABM_CMS.Services
 {
     public class SmsSender : IMessageSender
     {
+        //Payable
         //Twilio
         //https://www.twilio.com/docs/sms/quickstart/csharp-dotnet-framework
         public async Task Send(IdentityUser user, string subject, string message)
