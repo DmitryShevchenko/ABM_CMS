@@ -111,7 +111,7 @@ namespace ABM_CMS.Controllers
                 return Ok(new
                 {
                     token = tokenHandler.WriteToken(token), expiration = token.ValidTo, userName = user.UserName,
-                    userRole = roles.FirstOrDefault()
+                    userRole = roles.FirstOrDefault(), statusCode = StatusCode(200)
                 });
             }
             //return ERR

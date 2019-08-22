@@ -12,15 +12,27 @@
     <ItemGroup>
         <PackageReference Include="Hangfire" Version="1.7.6" />
         <PackageReference Include="Microsoft.AspNetCore.App" />
+        <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.2.0" />
         <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" PrivateAssets="All" />
-        <PackageReference Include="Twilio" Version="5.31.3" />
+        <PackageReference Include="Twilio" Version="5.31.3" />        
     </ItemGroup>
 
     <ItemGroup>
         <!-- Don't publish the SPA source files, but do show them in the project files list -->
         <Content Remove="$(SpaRoot)**" />
+        <Content Include="ClientApp\src\components\Auth\AuthForm.js" />
+        <Content Include="ClientApp\src\components\Auth\form.css" />
+        <Content Include="ClientApp\src\components\Auth\LoginFrom.js" />
+        <Content Include="ClientApp\src\components\Auth\RegistrationForm.js" />
+        <Content Include="ClientApp\src\components\From\Field.css" />
+        <Content Include="ClientApp\src\components\From\Field.js" />
+        <Content Include="ClientApp\src\store\Login.js" />
         <None Remove="$(SpaRoot)**" />
         <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="wwwroot\EmailTemplate" />
     </ItemGroup>
 
     <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
