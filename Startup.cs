@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using System.Threading.Tasks;
 using ABM_CMS.Database;
 using ABM_CMS.Helpers;
 using ABM_CMS.Interfaces;
@@ -15,6 +16,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -149,8 +151,10 @@ namespace ABM_CMS
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
             app.UseAuthentication();
-            
 
+            SeedDatabase.InitializeAdmin(app.ApplicationServices
+                .GetRequiredService<IServiceScopeFactory>().CreateScope().ServiceProvider).Wait();
+            
             app.UseMvc(routes =>
             {
                 routes.MapRoute(

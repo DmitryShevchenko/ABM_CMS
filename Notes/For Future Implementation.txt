@@ -1,0 +1,2 @@
+USER’S ACTIVITY LOGGING -  https://codinginfinite.com/user-activity-logging-asp-net-core-mvc-application/
+CREATING ADMIN PANEL - https://codinginfinite.com/creating-admin-panel-asp-net-core-mvc-tutorial/
