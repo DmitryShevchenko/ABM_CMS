@@ -122,5 +122,42 @@ namespace ABM_CMS.Controllers
                 statusCode = StatusCode(401)
             });
         }
+
+
+
+        [HttpGet("[action]")]
+        public async Task<IActionResult> ConfirmEmail(string userid, string emailConfirmationToken)
+        {
+            if (string.IsNullOrWhiteSpace(userid) || string.IsNullOrWhiteSpace(emailConfirmationToken))
+            {
+                ModelState.AddModelError("", "User Id and Code are Required");
+                return BadRequest(ModelState);
+            }
+
+            var user = await _userManager.FindByIdAsync(userid);
+
+            if (user == null)
+            {
+                return new JsonResult("ERROR");
+            }
+
+            if (user.EmailConfirmed)
+            {
+                return Redirect("/login");
+            }
+
+            var result = await _userManager.ConfirmEmailAsync(user, emailConfirmationToken);
+
+            if (result.Succeeded)
+            {
+                return RedirectToAction("EmailConfirmed", "Notifications", new {userid, emailConfirmationToken});
+            }
+            else
+            {
+                var errors = result.Errors.Select(identityError => identityError.ToString());
+
+                return new JsonResult(errors);
+            }
+        }
     }
 }
