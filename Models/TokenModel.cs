@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -23,7 +24,7 @@ namespace ABM_CMS.Models
         /// Get the token creation date.
         /// </summary>
         [Required]
-        public DataType CreatedDate { get; set; }
+        public DateTime CreatedDate { get; set; }
 
         /// <summary>
         /// The user it was issued to.
@@ -31,8 +32,8 @@ namespace ABM_CMS.Models
         [Required]
         public string UserId { get; set; }
         
-        [Required] public DataType LastModifiedDate { get; set; }
-        [Required] public DataType ExpiryTime { get; set; }
+        [Required] public DateTime LastModifiedDate { get; set; }
+        [Required] public DateTime ExpiryTime { get; set; }
         
         [ForeignKey("UserId")]
         public virtual ApplicationUser User { get; set; }
