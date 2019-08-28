@@ -8,7 +8,7 @@ using Twilio.Rest.Api.V2010.Account;
 
 namespace ABM_CMS.Services
 {
-    public class SmsSender : IMessageSender
+    public class SmsSender
     {
         //Payable
         //Twilio

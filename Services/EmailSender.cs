@@ -8,33 +8,33 @@ using Microsoft.Extensions.Options;
 
 namespace ABM_CMS.Services
 {
-    public class EmailSender : IMessageSender
+    public class EmailSender : IEmailSender
     {
-        public readonly EmailSmtp EmailSmtp;
+        private readonly EmailSmtp _emailSmtp;
 
         public EmailSender(IOptions<EmailSmtp> options)
         {
-            EmailSmtp = options.Value;
+            _emailSmtp = options.Value;
         }
 
         // https://www.hangfire.io/
-        public async Task Send(IdentityUser user, string subject, string message)
+        public async Task Send(string userEmail, string subject, string message)
         {
             using (var email = new MailMessage()
             {
-                From = new MailAddress(EmailSmtp.AppEmail),
-                To = {new MailAddress(user.Email)},
+                From = new MailAddress(_emailSmtp.AppEmail),
+                To = {new MailAddress(userEmail)},
                 Subject = subject,
                 Body = message,
             })
             {
                 using (var smtp = new SmtpClient())
                 {
-                    smtp.Host = EmailSmtp.Host;
-                    smtp.Port = EmailSmtp.Port;
+                    smtp.Host = _emailSmtp.Host;
+                    smtp.Port = _emailSmtp.Port;
                     smtp.EnableSsl = true;
                     smtp.UseDefaultCredentials = false;
-                    smtp.Credentials = new NetworkCredential(EmailSmtp.AppEmail, EmailSmtp.Password);
+                    smtp.Credentials = new NetworkCredential(_emailSmtp.AppEmail, _emailSmtp.Password);
                     smtp.DeliveryMethod = SmtpDeliveryMethod.Network;
                     
                     //smtp.Send(email);

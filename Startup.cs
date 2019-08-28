@@ -119,13 +119,12 @@ namespace ABM_CMS
                 }));
             services.AddHangfireServer();
             
+            //Options
+            services.AddOptions();
+            services.Configure<EmailSmtp>(Configuration.GetSection("EmailSenderSmtp"));
+            
             //Add Custom Services
-            services.AddTransient<IMessageSender, EmailSender>();
-           // services.AddTransient<IMessageSender, SmsSender>();
-           
-           //Options
-           services.AddOptions();
-           services.Configure<EmailSmtp>(Configuration.GetSection("EmailSenderSmtp"));
+            services.AddTransient<IEmailSender, EmailSender>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
