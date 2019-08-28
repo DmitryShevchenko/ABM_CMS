@@ -27,14 +27,14 @@ namespace ABM_CMS.Controllers
     [Route("api/[controller]")]
     public class AccountController : Controller
     {
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly AppSettings _appSettings;
         private readonly IEmailSender _emailSender;
         private readonly AppDbContext _db;
 
 
-        public AccountController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager,
+        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager,
             IOptions<AppSettings> appSettings, IEmailSender emailSender, AppDbContext db)
         {
             _appSettings = appSettings.Value;
@@ -50,7 +50,7 @@ namespace ABM_CMS.Controllers
             //Hold all errors related to registration
             var errorList = new List<string>();
 
-            var user = new IdentityUser()
+            var user = new ApplicationUser()
             {
                 Email = registerViewModel.Email,
                 UserName = registerViewModel.Email,
