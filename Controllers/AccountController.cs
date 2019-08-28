@@ -1,21 +1,26 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using ABM_CMS.Database;
 using ABM_CMS.Helpers;
 using ABM_CMS.Interfaces;
 using ABM_CMS.Models;
-using ABM_CMS.Services;
-using Hangfire;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
+using JwtRegisteredClaimNames = System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames;
+using ABM_CMS.Extensions;
+using Hangfire;
+using Newtonsoft.Json;
 
 namespace ABM_CMS.Controllers
 {
@@ -57,10 +62,18 @@ namespace ABM_CMS.Controllers
             if (result.Succeeded)
             {
                 await _userManager.AddToRoleAsync(user, "User");
-                //ADD Sending Confirmation Email
-                
+
+                // Conformation of email
+                var emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                var callbackUrl = Url.Action("ConfirmEmail", "Account",
+                    new {UserId = user.Id, EmailConfirmationToken = emailConfirmationToken}, protocol: HttpContext.Request.Scheme);
+                BackgroundJob.Enqueue( () => _emailSender.Send(user.Email, "Confirm Your Email",
+                    @"Please confirm your e-mail by clicking this link: <a href=\" + callbackUrl + "\">click here</a>"));
+                /*await _messageSender.Send(user.Email, "Confirm Your Email",
+                    "Please confirm your e-mail by clicking this link: <a href=\"" + callbackUrl + "\">click here</a>");*/
+
                 return Ok(new
-                    {userName = user.UserName, email = user.Email, status = 1, message = "Registration Successful"});
+                    {/*userName = user.UserName,*/ email = user.Email, status = 1, message = "Registration Successful"});
             }
             else
             {
@@ -70,7 +83,7 @@ namespace ABM_CMS.Controllers
                     errorList.Add(identityError.Description);
                 }
             }
-
+            
             return BadRequest(new JsonResult(errorList));
         }
 
