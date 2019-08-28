@@ -27,11 +27,11 @@ namespace ABM_CMS.Migrations
                     b.Property<string>("ClientId")
                         .IsRequired();
 
-                    b.Property<int>("CreatedDate");
+                    b.Property<DateTime>("CreatedDate");
 
-                    b.Property<int>("ExpiryTime");
+                    b.Property<DateTime>("ExpiryTime");
 
-                    b.Property<int>("LastModifiedDate");
+                    b.Property<DateTime>("LastModifiedDate");
 
                     b.Property<string>("UserId")
                         .IsRequired();

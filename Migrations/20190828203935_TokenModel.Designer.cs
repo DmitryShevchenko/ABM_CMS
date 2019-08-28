@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ABM_CMS.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20190828195306_TokenModel")]
+    [Migration("20190828203935_TokenModel")]
     partial class TokenModel
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -29,11 +29,11 @@ namespace ABM_CMS.Migrations
                     b.Property<string>("ClientId")
                         .IsRequired();
 
-                    b.Property<int>("CreatedDate");
+                    b.Property<DateTime>("CreatedDate");
 
-                    b.Property<int>("ExpiryTime");
+                    b.Property<DateTime>("ExpiryTime");
 
-                    b.Property<int>("LastModifiedDate");
+                    b.Property<DateTime>("LastModifiedDate");
 
                     b.Property<string>("UserId")
                         .IsRequired();

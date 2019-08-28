@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace ABM_CMS.Migrations
 {
@@ -34,10 +35,10 @@ namespace ABM_CMS.Migrations
                     Id = table.Column<string>(nullable: false),
                     ClientId = table.Column<string>(nullable: false),
                     Value = table.Column<string>(nullable: false),
-                    CreatedDate = table.Column<int>(nullable: false),
+                    CreatedDate = table.Column<DateTime>(nullable: false),
                     UserId = table.Column<string>(nullable: false),
-                    LastModifiedDate = table.Column<int>(nullable: false),
-                    ExpiryTime = table.Column<int>(nullable: false)
+                    LastModifiedDate = table.Column<DateTime>(nullable: false),
+                    ExpiryTime = table.Column<DateTime>(nullable: false)
                 },
                 constraints: table =>
                 {
