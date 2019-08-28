@@ -93,7 +93,7 @@ namespace ABM_CMS
                 {
                     ValidateIssuerSigningKey = true,
                     ValidateIssuer = true,
-                    //ValidateAudience = true,
+                    ValidateAudience = true,
                     ValidIssuer = appSettings.Site,
                     ValidAudience = appSettings.Audience,
                     IssuerSigningKey = new SymmetricSecurityKey(key),

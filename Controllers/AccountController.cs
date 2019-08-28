@@ -75,7 +75,7 @@ namespace ABM_CMS.Controllers
                     "Please confirm your e-mail by clicking this link: <a href=\"" + callbackUrl + "\">click here</a>");*/
 
                 return Ok(new
-                    {/*userName = user.UserName,*/ email = user.Email, status = 1, message = "Registration Successful"});
+                    {userName = user.UserName, email = user.Email, status = 1, message = "Registration Successful"});
             }
             else
             {

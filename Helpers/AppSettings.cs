@@ -7,5 +7,10 @@ namespace ABM_CMS.Helpers
         public string Audience { get; set; }
         public string ExpireTime { get; set; }
         public string Secret { get; set; }
+        
+        //Token Refresh Props
+        public string RefreshToken { get; set; }
+        public string GrantType { get; set; }
+        public string ClientId { get; set; }
     }
 }
