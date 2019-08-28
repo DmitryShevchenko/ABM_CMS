@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using Twilio.Http;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ABM_CMS.Models
 {
@@ -33,5 +33,8 @@ namespace ABM_CMS.Models
         
         [Required] public DataType LastModifiedDate { get; set; }
         [Required] public DataType ExpiryTime { get; set; }
+        
+        [ForeignKey("UserId")]
+        public virtual ApplicationUser User { get; set; }
     }
 }

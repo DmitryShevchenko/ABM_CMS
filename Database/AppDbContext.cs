@@ -22,6 +22,10 @@ namespace ABM_CMS.Database
                 new {Id = "2", Name = "User", NormalizedName = "USER"},
                 new {Id = "3", Name = "Moderator", NormalizedName = "MODERATOR"}
             );
+
+           // builder.Entity<TokenModel>().HasOne(o => o.User).WithMany(m => m.Tokens).HasForeignKey(k => k.UserId);
         }
+        
+        public DbSet<TokenModel> Tokens { get; set; }
     }
 }
