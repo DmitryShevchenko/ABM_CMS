@@ -67,6 +67,8 @@ namespace ABM_CMS.Controllers
                 var emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                 var callbackUrl = Url.Action("ConfirmEmail", "Account",
                     new {UserId = user.Id, EmailConfirmationToken = emailConfirmationToken}, protocol: HttpContext.Request.Scheme);
+                
+                //Hangfire Job Email Send
                 BackgroundJob.Enqueue( () => _emailSender.Send(user.Email, "Confirm Your Email",
                     @"Please confirm your e-mail by clicking this link: <a href=\" + callbackUrl + "\">click here</a>"));
                 /*await _messageSender.Send(user.Email, "Confirm Your Email",
