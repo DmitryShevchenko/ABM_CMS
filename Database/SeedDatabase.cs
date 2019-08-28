@@ -10,25 +10,27 @@ namespace ABM_CMS.Database
     {
         public static async Task InitializeAdmin(IServiceProvider serviceProvider)
         {
-            var context = serviceProvider.GetRequiredService<AppDbContext>();
-            var userManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
-            context.Database.EnsureCreated();
-            
-            if (!context.Users.Any())
+            using (var context = serviceProvider.GetRequiredService<AppDbContext>())
             {
-                var adminUser = new IdentityUser()
+                context.Database.EnsureCreated();
+            
+                if (!context.UserRoles.Any(user => user.RoleId == "1"))
                 {
-                    SecurityStamp = Guid.NewGuid().ToString(),
-                    UserName = "Admin",
-                    Email = "admin@admin.com", //change 
-                };
-                var result = await userManager.CreateAsync(adminUser, "@Admin123");
-                if (result.Succeeded)
-                {
-                    await userManager.AddToRoleAsync(adminUser, "Admin");
+                    var userManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
+                
+                    var adminUser = new IdentityUser()
+                    {
+                        SecurityStamp = Guid.NewGuid().ToString(),
+                        UserName = "Admin",
+                        Email = "admin@admin.com", //change 
+                    };
+                    var result = await userManager.CreateAsync(adminUser, "@Admin123");
+                    if (result.Succeeded)
+                    {
+                        await userManager.AddToRoleAsync(adminUser, "Admin");
+                    }
                 }
             }
-
         }
     }
 }
