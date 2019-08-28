@@ -25,15 +25,18 @@ namespace ABM_CMS.Controllers
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly AppSettings _appSettings;
-        private readonly IMessageSender _messageSender;
+        private readonly IEmailSender _emailSender;
+        private readonly AppDbContext _db;
+
 
         public AccountController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager,
-            IOptions<AppSettings> appSettings, IMessageSender messageSender)
+            IOptions<AppSettings> appSettings, IEmailSender emailSender, AppDbContext db)
         {
             _appSettings = appSettings.Value;
             _userManager = userManager;
             _signInManager = signInManager;
-            _messageSender = messageSender;
+            _emailSender = emailSender;
+            _db = db;
         }
 
         [HttpPost("[action]")]
@@ -45,7 +48,7 @@ namespace ABM_CMS.Controllers
             var user = new IdentityUser()
             {
                 Email = registerViewModel.Email,
-                UserName = registerViewModel.UserName,
+                UserName = registerViewModel.Email,
                 SecurityStamp = Guid.NewGuid().ToString(),
             };
 
@@ -75,23 +78,28 @@ namespace ABM_CMS.Controllers
         public async Task<IActionResult> Login([FromBody] LoginViewModel loginViewModel)
         {
             //Get the user from DB
-            var user = await _userManager.FindByNameAsync(loginViewModel.UserName);
+            var user = await _userManager.FindByEmailAsync(loginViewModel.Email);
 
             if (user != null && await _userManager.CheckPasswordAsync(user, loginViewModel.Password))
             {
+                // Conformation of email
+                if (!await _userManager.IsEmailConfirmedAsync(user))
+                {
+                    ModelState.AddModelError(string.Empty, "User Has not Confirmed Email.");
+                    return Unauthorized(new { LoginError = "We sent you an Confirmation Email. Please Confirm Your Registration With ABM.com To Log in." });
+                }
+                
                 var roles = await _userManager.GetRolesAsync(user);
 
                 var key = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_appSettings.Secret));
 
                 var tokenExpiryTime = Convert.ToDouble(_appSettings.ExpireTime);
 
-                // ADD Conformation of email
-
                 var tokenDescriptor = new SecurityTokenDescriptor()
                 {
                     Subject = new ClaimsIdentity(new Claim[]
                     {
-                        new Claim(JwtRegisteredClaimNames.Sub, loginViewModel.UserName),
+                        new Claim(JwtRegisteredClaimNames.Sub, loginViewModel.Email),
                         new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                         new Claim(ClaimTypes.NameIdentifier, user.Id),
                         new Claim(ClaimTypes.Role, roles.FirstOrDefault()),
@@ -105,15 +113,19 @@ namespace ABM_CMS.Controllers
                 };
 
                 //Generate token 
-
                 var tokenHandler = new JwtSecurityTokenHandler();
                 var token = tokenHandler.CreateToken(tokenDescriptor);
+                var tokenString = tokenHandler.WriteToken(token);
+
+                await _userManager.SetAuthenticationTokenAsync(user, "SecurityTokenDescriptor", token.Issuer, tokenString);
+
                 return Ok(new
                 {
-                    token = tokenHandler.WriteToken(token), expiration = token.ValidTo, userName = user.UserName,
+                    token = tokenString, expiration = token.ValidTo, email = user.Email,
                     userRole = roles.FirstOrDefault(), statusCode = StatusCode(200)
                 });
             }
+
             //return ERR
             ModelState.AddModelError("", "UserName/Password was not fount");
             return Unauthorized(new

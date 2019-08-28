@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using ABM_CMS.Interfaces;
 using Hangfire;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,19 +11,18 @@ namespace ABM_CMS.Controllers
     [Route("api/[controller]")]
     public class TestController : Controller
     {
-        private readonly IMessageSender _messageSender;
+        private readonly IEmailSender _emailSender;
         
-        public TestController(IMessageSender messageSender)
+        public TestController(IEmailSender emailSender)
         {
-            _messageSender = messageSender;
+            _emailSender = _emailSender;
         }
+        
+        [Authorize(Policy = "RequireAdminRole")]
         [HttpGet("[action]")]
         public IActionResult Index()
         {
-            BackgroundJob.Enqueue<IMessageSender>(x => x.Send(new IdentityUser(){UserName = "Dima", Email = "dima_che@ukr.net", PhoneNumber = "+380990049919"}, "subject", "message"));
-            return Ok();
+            return Content("Hello word");
         }
-
-       
     }
 }

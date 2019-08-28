@@ -1,3 +1,5 @@
+using System;
+using ABM_CMS.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +11,7 @@ namespace ABM_CMS.Database
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
         }
-        
+
         //Roles for app
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -21,7 +23,5 @@ namespace ABM_CMS.Database
                 new {Id = "3", Name = "Moderator", NormalizedName = "MODERATOR"}
             );
         }
-        
-        
     }
 }
