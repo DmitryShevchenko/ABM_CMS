@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Identity;
 
 namespace ABM_CMS.Models
 {
@@ -8,10 +9,12 @@ namespace ABM_CMS.Models
         [EmailAddress]
         public string Email { get; set; }
         
+        /*
         [Required]
         [Display(Name = "User Name")]
         public string UserName { get; set; }
-        
+        */
+
         [Required]
         [DataType(DataType.Password)]
         public string Password { get; set; }
