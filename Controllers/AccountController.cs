@@ -19,6 +19,7 @@ using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using JwtRegisteredClaimNames = System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames;
 using ABM_CMS.Extensions;
+using ABM_CMS.Models.Identity;
 using Hangfire;
 using Newtonsoft.Json;
 
@@ -89,68 +90,7 @@ namespace ABM_CMS.Controllers
             return BadRequest(new JsonResult(errorList));
         }
 
-        [HttpPost("[action]")]
-        public async Task<IActionResult> Login([FromBody] LoginViewModel loginViewModel)
-        {
-            //Get the user from DB
-            var user = await _userManager.FindByEmailAsync(loginViewModel.Email);
-
-            if (user != null && await _userManager.CheckPasswordAsync(user, loginViewModel.Password))
-            {
-                // Conformation of email
-                if (!await _userManager.IsEmailConfirmedAsync(user))
-                {
-                    ModelState.AddModelError(string.Empty, "User Has not Confirmed Email.");
-                    return Unauthorized(new { LoginError = "We sent you an Confirmation Email. Please Confirm Your Registration With ABM.com To Log in." });
-                }
-                
-                var roles = await _userManager.GetRolesAsync(user);
-
-                var key = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_appSettings.Secret));
-
-                var tokenExpiryTime = Convert.ToDouble(_appSettings.ExpireTime);
-
-                var tokenDescriptor = new SecurityTokenDescriptor()
-                {
-                    Subject = new ClaimsIdentity(new Claim[]
-                    {
-                        new Claim(JwtRegisteredClaimNames.Sub, loginViewModel.Email),
-                        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                        new Claim(ClaimTypes.NameIdentifier, user.Id),
-                        new Claim(ClaimTypes.Role, roles.FirstOrDefault()),
-                        new Claim("LoggedOn", DateTime.Now.ToString(CultureInfo.InvariantCulture)),
-                    }),
-
-                    SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature),
-                    Issuer = _appSettings.Site,
-                    Audience = _appSettings.Audience,
-                    Expires = DateTime.UtcNow.AddMinutes(tokenExpiryTime),
-                };
-
-                //Generate token 
-                var tokenHandler = new JwtSecurityTokenHandler();
-                var token = tokenHandler.CreateToken(tokenDescriptor);
-                var tokenString = tokenHandler.WriteToken(token);
-
-                await _userManager.SetAuthenticationTokenAsync(user, "SecurityTokenDescriptor", token.Issuer, tokenString);
-
-                return Ok(new
-                {
-                    token = tokenString, expiration = token.ValidTo, email = user.Email,
-                    userRole = roles.FirstOrDefault(), statusCode = StatusCode(200)
-                });
-            }
-
-            //return ERR
-            ModelState.AddModelError("", "UserName/Password was not fount");
-            return Unauthorized(new
-            {
-                LoginError = "Please Check the Login Credentials - Invalid UserName/Password was entered",
-                statusCode = StatusCode(401)
-            });
-        }
-
-
+        
 
         [HttpGet("[action]")]
         public async Task<IActionResult> ConfirmEmail(string userid, string emailConfirmationToken)

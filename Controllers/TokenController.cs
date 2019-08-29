@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using ABM_CMS.Database;
 using ABM_CMS.Helpers;
 using ABM_CMS.Models;
+using ABM_CMS.Models.Identity;
+using ABM_CMS.Models.Token;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -22,15 +24,13 @@ namespace ABM_CMS.Controllers
         //jwt and refresh tokens
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly AppSettings _appSettings;
-        private readonly TokenModel _token;
         private readonly AppDbContext _db;
 
         public TokenController(UserManager<ApplicationUser> userManager, IOptions<AppSettings> appSettings,
-            TokenModel token, AppDbContext db)
+            AppDbContext db)
         {
             _userManager = userManager;
             _appSettings = appSettings.Value;
-            _token = token;
             _db = db;
         }
 
@@ -51,11 +51,11 @@ namespace ABM_CMS.Controllers
                 return new StatusCodeResult(500);
             }
 
-            switch (model.GrandType)
+            switch (model.GrantType)
             {
-                case "password":
+                case GrantType.Login:
                     return await GenerateNewToken(model);
-                case "refresh_token":
+                case GrantType.RefreshToken:
                     return await RefreshToken(model);
                 default:
                     // Non supported return 401(Unauthorized)
@@ -70,34 +70,47 @@ namespace ABM_CMS.Controllers
         /// <returns></returns>
         private async Task<IActionResult> GenerateNewToken(TokenRequestModel model)
         {
-            var user = await _userManager.FindByNameAsync(model.UserName);
-
-            if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
+            try
             {
-                // If user has confirmed his Email
-                if (!await _userManager.IsEmailConfirmedAsync(user))
+                var user = await _userManager.FindByEmailAsync(model.Email);
+
+                if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
                 {
-                    ModelState.AddModelError(string.Empty, "User has not Confirmed Email");
-                    return Unauthorized(new { LoginError = "We sent you an Confirmation Email. Please Confirm Your Registration With ABM.com To Log in." });
-                }
-                
-                //UserName & Password matches: create the refresh token
-                var newRefreshToken = CreateRefreshToken(_appSettings.ClientId, user.Id);
-                //Delete any existing old refresh_tokens
-                var oldRefreshTokens = _db.Tokens.Where(rt => rt.UserId == user.Id);
-                _db.Tokens.RemoveRange(oldRefreshTokens);
-                await _db.SaveChangesAsync();
-                
-                //Create & Return access token which contains JWT and Refresh token
+                    // If user has confirmed his Email
+                    if (!await _userManager.IsEmailConfirmedAsync(user))
+                    {
+                        ModelState.AddModelError(string.Empty, "User has not Confirmed Email");
+                        return Unauthorized(new
+                        {
+                            LoginError =
+                                $"We sent you an Confirmation Email. On {user.Email}. Please Confirm Your Registration to Log in."
+                        });
+                    }
 
-                var accessToken = await CreateAccessToken(user, newRefreshToken.Value);
-                return Ok(new {authToken = accessToken});
+                    //UserName & Password matches: create the refresh token
+                    var newRefreshToken = CreateRefreshToken(_appSettings.ClientId, user.Id);
+                    //Delete any existing old refresh_tokens
+                    var oldRefreshTokens = _db.RefreshTokens.Where(rt => rt.UserId == user.Id);
+                    _db.RefreshTokens.RemoveRange(oldRefreshTokens);
+                    //Add refresh token to Db.
+                    _db.RefreshTokens.Add(newRefreshToken);
+                    await _db.SaveChangesAsync();
+
+                    //Create & Return access token which contains JWT and Refresh token
+
+                    var accessToken = await CreateAccessToken(user, newRefreshToken.Value);
+                    return Ok(new {authToken = accessToken});
+                }
+                else
+                {
+                    ModelState.AddModelError(string.Empty, "Email/Password wat not Found");
+                    return Unauthorized(new
+                        {LoginError = "Please Check the Login Credentials - Invalid Email/Password was entered"});
+                }
             }
-            else
+            catch (Exception e)
             {
-                ModelState.AddModelError(string.Empty, "UserName/Password wat not Found");
-                return Unauthorized(new
-                    {LoginError = "Please Check the Login Credentials - Invalid UserName/Password was entered"});
+               return new UnauthorizedResult();
             }
         }
 
@@ -123,23 +136,23 @@ namespace ABM_CMS.Controllers
                 Audience = _appSettings.Audience,
                 Expires = DateTime.UtcNow.AddMinutes(tokenExpiryTime),
             };
-             //Generate token 
-             var newToken = tokenHandler.CreateToken(tokenDescriptor);
-             var encodedToken = tokenHandler.WriteToken(newToken);
-             
-             return new TokenResponseModel()
-             {
-                 Token = encodedToken,
-                 Expiration = newToken.ValidTo,
-                 RefreshToken = refreshToken,
-                 Roles = roles.FirstOrDefault(),
-                 UserName = user.UserName,
-             };
+            //Generate token 
+            var newToken = tokenHandler.CreateToken(tokenDescriptor);
+            var encodedToken = tokenHandler.WriteToken(newToken);
+
+            return new TokenResponseModel()
+            {
+                Token = encodedToken,
+                Expiration = newToken.ValidTo,
+                RefreshToken = refreshToken,
+                Roles = roles.FirstOrDefault(),
+                UserName = user.UserName,
+            };
         }
 
-        private TokenModel CreateRefreshToken(string clientId, string userId)
+        private RefreshTokenModel CreateRefreshToken(string clientId, string userId)
         {
-            return new TokenModel()
+            return new RefreshTokenModel()
             {
                 ClientId = clientId,
                 UserId = userId,
@@ -157,7 +170,40 @@ namespace ABM_CMS.Controllers
         /// <exception cref="NotImplementedException"></exception>
         private async Task<IActionResult> RefreshToken(TokenRequestModel model)
         {
-            throw new System.NotImplementedException();
+            try
+            {
+                var rt = _db.RefreshTokens.FirstOrDefault(t =>
+                    t.ClientId == _appSettings.ClientId &&
+                    t.Value == model.RefreshToken);
+
+                if (rt == null || rt.ExpiryTime < DateTime.UtcNow)
+                {
+                    return new UnauthorizedResult();
+                }
+
+                //Check if there`s user with the refresh token`s userId
+                var user = await _userManager.FindByIdAsync(rt.UserId);
+
+                if (user == null)
+                {
+                    return new UnauthorizedResult();
+                }
+
+                //Generate new Refresh token 
+                var rtNew = CreateRefreshToken(rt.ClientId, rt.UserId);
+
+                _db.RefreshTokens.Remove(rt);
+                _db.RefreshTokens.Add(rtNew);
+                await _db.SaveChangesAsync();
+
+
+                var response = await CreateAccessToken(user, rtNew.Value);
+                return Ok(new {authToken = response});
+            }
+            catch (Exception e)
+            {
+                return new UnauthorizedResult();
+            }
         }
     }
 }
