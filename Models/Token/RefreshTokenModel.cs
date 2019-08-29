@@ -1,8 +1,9 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using ABM_CMS.Models.Identity;
 
-namespace ABM_CMS.Models
+namespace ABM_CMS.Models.Token
 {
     public sealed class RefreshTokenModel
     {

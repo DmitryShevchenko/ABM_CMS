@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using ABM_CMS.Models.Token;
 using Microsoft.AspNetCore.Identity;
 
-namespace ABM_CMS.Models
+namespace ABM_CMS.Models.Identity
 {
     public sealed class ApplicationUser : IdentityUser
     {

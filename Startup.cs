@@ -5,6 +5,7 @@ using ABM_CMS.Database;
 using ABM_CMS.Helpers;
 using ABM_CMS.Interfaces;
 using ABM_CMS.Models;
+using ABM_CMS.Models.Identity;
 using ABM_CMS.Services;
 using Hangfire;
 using Hangfire.SqlServer;
@@ -56,7 +57,7 @@ namespace ABM_CMS
                 option.UseSqlServer(Configuration.GetConnectionString("DefaultConnectionLocal")));
 
             //Identity Framework
-            services.AddIdentity<IdentityUser, IdentityRole>(options =>
+            services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
                 //Password
                 options.Password.RequireDigit = true;

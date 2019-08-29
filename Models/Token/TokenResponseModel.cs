@@ -1,6 +1,6 @@
 using System;
 
-namespace ABM_CMS.Models
+namespace ABM_CMS.Models.Token
 {
     public class TokenResponseModel
     {

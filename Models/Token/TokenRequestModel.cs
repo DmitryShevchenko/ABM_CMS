@@ -1,13 +1,16 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace ABM_CMS.Models
+
+namespace ABM_CMS.Models.Token
 {
     public enum GrantType
     {
         Login = 717590000,
         RefreshToken = 717590001,
     }
-    
+    /// <summary>
+    /// Use for login or RefreshToken
+    /// </summary>
     public class TokenRequestModel
     {
         /// <summary>

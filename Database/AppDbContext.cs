@@ -1,5 +1,6 @@
 using System;
 using ABM_CMS.Models;
+using ABM_CMS.Models.Token;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -26,6 +27,6 @@ namespace ABM_CMS.Database
            // builder.Entity<TokenModel>().HasOne(o => o.User).WithMany(m => m.Tokens).HasForeignKey(k => k.UserId);
         }
         
-        public DbSet<TokenModel> Tokens { get; set; }
+        public DbSet<RefreshTokenModel> RefreshTokens { get; set; }
     }
 }
