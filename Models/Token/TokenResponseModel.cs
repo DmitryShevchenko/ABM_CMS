@@ -24,5 +24,9 @@ namespace ABM_CMS.Models
         /// User Name.
         /// </summary>
         public string UserName { get; set; }
+        /// <summary>
+        /// User Email.
+        /// </summary>
+        public string Email { get; set; }
     }
 }
