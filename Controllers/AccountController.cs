@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,9 +20,13 @@ using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using JwtRegisteredClaimNames = System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames;
 using ABM_CMS.Extensions;
+using ABM_CMS.Models.Account;
 using ABM_CMS.Models.Identity;
+using ABM_CMS.Models.Password;
 using Hangfire;
+using Microsoft.AspNetCore.Authorization;
 using Newtonsoft.Json;
+using Twilio.TwiML.Messaging;
 
 namespace ABM_CMS.Controllers
 {
@@ -58,6 +63,7 @@ namespace ABM_CMS.Controllers
                 SecurityStamp = Guid.NewGuid().ToString(),
             };
 
+            //Auto check for already taken Email and UserName
             var result = await _userManager.CreateAsync(user, registerViewModel.Password);
 
             if (result.Succeeded)
@@ -67,37 +73,90 @@ namespace ABM_CMS.Controllers
                 // Conformation of email
                 var emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                 var callbackUrl = Url.Action("ConfirmEmail", "Account",
-                    new {UserId = user.Id, EmailConfirmationToken = emailConfirmationToken}, protocol: HttpContext.Request.Scheme);
-                
+                    new {UserId = user.Id, EmailConfirmationToken = emailConfirmationToken},
+                    protocol: HttpContext.Request.Scheme);
+
                 //Hangfire Job Email Send
-                BackgroundJob.Enqueue( () => _emailSender.Send(user.Email, "Confirm Your Email",
-                    @"Please confirm your e-mail by clicking this link: <a href=\" + callbackUrl + "\">click here</a>"));
+                BackgroundJob.Enqueue(() => _emailSender.Send(user.Email, "Confirm Your Email",
+                    $"Please confirm your e-mail by clicking this link: <a href={callbackUrl}>click here</a>"));
                 /*await _messageSender.Send(user.Email, "Confirm Your Email",
                     "Please confirm your e-mail by clicking this link: <a href=\"" + callbackUrl + "\">click here</a>");*/
 
                 return Ok(new
                     {userName = user.UserName, email = user.Email, status = 1, message = "Registration Successful"});
             }
-            else
-            {
-                foreach (var identityError in result.Errors)
-                {
-                    ModelState.AddModelError("", identityError.Description);
-                    errorList.Add(identityError.Description);
-                }
-            }
             
+            errorList.AddRange(result.Errors.Select(err => err.Description));
+
             return BadRequest(new JsonResult(errorList));
         }
 
+
+        [HttpPost("[action]")]
+        [Authorize(Policy = "RequireLoggedId")]
+        public async Task<IActionResult> PasswordChange([FromBody] PasswordChangeModel model)
+        {
+            var errorList = new List<string>();
+            if (model == null) return new StatusCodeResult(500);
+
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null) return new StatusCodeResult(500);
+
+            var result = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+            if (result.Succeeded)
+            {
+                return Ok(new {Message = "Password was Changed"});
+            }
+
+            errorList.AddRange(result.Errors.Select(err => err.Description));
+
+            return BadRequest(errorList);
+        }
         
+
+        //IN Use result
+        /*[HttpPost("[action]")]
+        public async Task<IActionResult> ResetPassword([FromBody] string email)
+        {
+            if (string.IsNullOrWhiteSpace(email)) return BadRequest(new {ResetPasswordError = "User Email are Required"});
+            
+            var user = await _userManager.FindByEmailAsync(email);
+
+            if (user == null) return BadRequest(new {ResetPasswordError = $"User with Email: {email} are not Found"});
+
+            //var resetPasswordToken = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var callBackUrl = Url.Action("ResetPasswordView", "Notifications", new {UserId = user.Id});
+            BackgroundJob.Enqueue(() => _emailSender.Send(user.Email, "Confirm password change",
+                $"Please confirm your e-mail by clicking this link: <a href={callBackUrl}>click here</a>"));
+            
+            return Ok();
+        }*/
+        
+        //Test
+        [HttpGet("[action]")]
+        public async Task<IActionResult> ResetPassword(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email)) return BadRequest(new {ResetPasswordError = "User Email are Required"});
+            
+            var user = await _userManager.FindByEmailAsync(email);
+
+            if (user == null) return BadRequest(new {ResetPasswordError = $"User with Email: {email} are not Found"});
+
+            //var resetPasswordToken = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var callBackUrl = Url.Action("ResetPasswordView", "Notifications", new {UserId = user.Id}, protocol: HttpContext.Request.Scheme);
+            BackgroundJob.Enqueue(() => _emailSender.Send(user.Email, "Confirm password change",
+                $"Please confirm your e-mail by clicking this link: <a href={callBackUrl}>click here</a>"));
+            
+            return Ok();
+        }
+
 
         [HttpGet("[action]")]
         public async Task<IActionResult> ConfirmEmail(string userid, string emailConfirmationToken)
         {
             if (string.IsNullOrWhiteSpace(userid) || string.IsNullOrWhiteSpace(emailConfirmationToken))
             {
-                ModelState.AddModelError("", "User Id and Code are Required");
+                ModelState.AddModelError(string.Empty, "User Id and Code are Required");
                 return BadRequest(ModelState);
             }
 

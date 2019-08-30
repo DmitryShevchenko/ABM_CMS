@@ -147,6 +147,7 @@ namespace ABM_CMS.Controllers
                 RefreshToken = refreshToken,
                 Roles = roles.FirstOrDefault(),
                 UserName = user.UserName,
+                Email = user.Email,
             };
         }
 

@@ -17,6 +17,7 @@ namespace ABM_CMS.Models.Token
         /// Password or RefreshToken according to user (LoginRequest or RefreshTokenRequest).
         /// Login || RefreshToken
         /// </summary>
+        [Required]
         public GrantType GrantType { get; set; }
 
         /// <summary>

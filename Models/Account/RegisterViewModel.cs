@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Identity;
 
-namespace ABM_CMS.Models
+namespace ABM_CMS.Models.Account
 {
     public class RegisterViewModel
     {
