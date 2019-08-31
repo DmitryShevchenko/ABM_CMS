@@ -1,32 +1,18 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Globalization;
-using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
-using System.Net.Http;
-using System.Security.Claims;
-using System.Text;
 using System.Threading.Tasks;
 using ABM_CMS.Database;
 using ABM_CMS.Helpers;
 using ABM_CMS.Interfaces;
-using ABM_CMS.Models;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.JsonWebTokens;
-using Microsoft.IdentityModel.Tokens;
-using JwtRegisteredClaimNames = System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames;
-using ABM_CMS.Extensions;
 using ABM_CMS.Models.Account;
 using ABM_CMS.Models.Identity;
 using ABM_CMS.Models.Password;
 using Hangfire;
 using Microsoft.AspNetCore.Authorization;
-using Newtonsoft.Json;
-using Twilio.TwiML.Messaging;
 
 namespace ABM_CMS.Controllers
 {
@@ -85,7 +71,7 @@ namespace ABM_CMS.Controllers
                 return Ok(new
                     {userName = user.UserName, email = user.Email, status = 1, message = "Registration Successful"});
             }
-            
+
             errorList.AddRange(result.Errors.Select(err => err.Description));
 
             return BadRequest(new JsonResult(errorList));
@@ -112,42 +98,48 @@ namespace ABM_CMS.Controllers
 
             return BadRequest(errorList);
         }
-        
 
-        //IN Use result
-        /*[HttpPost("[action]")]
+        
+        [HttpPost("[action]")]
         public async Task<IActionResult> ResetPassword([FromBody] string email)
         {
-            if (string.IsNullOrWhiteSpace(email)) return BadRequest(new {ResetPasswordError = "User Email are Required"});
-            
+            if (string.IsNullOrWhiteSpace(email)) return BadRequest(new {Error = "User Email are Required"});
+
             var user = await _userManager.FindByEmailAsync(email);
 
-            if (user == null) return BadRequest(new {ResetPasswordError = $"User with Email: {email} are not Found"});
+            if (user == null) return BadRequest(new {Error = $"User with Email: {email} are not Found"});
 
-            //var resetPasswordToken = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var callBackUrl = Url.Action("ResetPasswordView", "Notifications", new {UserId = user.Id});
+            var resetPasswordToken = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var callBackUrl = Url.Action("ResetPasswordView", "Notifications", new {userId = user.Id, token = resetPasswordToken},
+                protocol: HttpContext.Request.Scheme);
             BackgroundJob.Enqueue(() => _emailSender.Send(user.Email, "Confirm password change",
                 $"Please confirm your e-mail by clicking this link: <a href={callBackUrl}>click here</a>"));
-            
-            return Ok();
-        }*/
-        
-        //Test
-        [HttpGet("[action]")]
-        public async Task<IActionResult> ResetPassword(string email)
+
+            return Ok(new
+            {
+                OkResult = "Check your email for a link to reset your password. If it doesn’t appear within a few minutes, check your spam folder."
+            });
+        }
+
+        [HttpPost("ResetPasswordConfirm")]
+        public async Task<IActionResult> ResetPassword([FromBody] string userId, string token, string password)
         {
-            if (string.IsNullOrWhiteSpace(email)) return BadRequest(new {ResetPasswordError = "User Email are Required"});
-            
-            var user = await _userManager.FindByEmailAsync(email);
+            if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(token) ||
+                string.IsNullOrWhiteSpace(password)) return new StatusCodeResult(500);
 
-            if (user == null) return BadRequest(new {ResetPasswordError = $"User with Email: {email} are not Found"});
+            var user = await _userManager.FindByIdAsync(userId);
 
-            //var resetPasswordToken = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var callBackUrl = Url.Action("ResetPasswordView", "Notifications", new {UserId = user.Id}, protocol: HttpContext.Request.Scheme);
-            BackgroundJob.Enqueue(() => _emailSender.Send(user.Email, "Confirm password change",
-                $"Please confirm your e-mail by clicking this link: <a href={callBackUrl}>click here</a>"));
+            if (user == null) return BadRequest(new {Error = $"User with Email: {userId} are not Found"});
+
+            var result = await _userManager.ResetPasswordAsync(user, token, password);
+            if (result.Succeeded)
+            {
+                return Ok(new {OkResult = "New password set successfully."});
+            }
             
-            return Ok();
+            var errorList = new List<string>();
+            errorList.AddRange(result.Errors.Select(err => err.Description));
+            return BadRequest(errorList);
         }
 
 

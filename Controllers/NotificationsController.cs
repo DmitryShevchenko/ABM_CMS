@@ -10,10 +10,10 @@ namespace ABM_CMS.Controllers
     {
         public NotificationsController(IPasswordReseter passwordReseter)
         {
-            _PasswordReseter = passwordReseter;
+            _passwordReseter = passwordReseter;
         }
 
-        private readonly IPasswordReseter _PasswordReseter;
+        private readonly IPasswordReseter _passwordReseter;
         public IActionResult EmailConfirmed(string userId, string emailConfirmationToken) 
         {
             if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(emailConfirmationToken))
@@ -21,19 +21,20 @@ namespace ABM_CMS.Controllers
                 return Redirect("/login");// 404 not found page
             }
 
-            return View();
+            return View(); //React View.
+            
         }
 
-        public IActionResult ResetPasswordView(string userId)
+        public IActionResult ResetPasswordView(string userId, string token)
         {
             if (string.IsNullOrWhiteSpace(userId))
             {
                 // 404 not found page
             }
-            var resetPassword = new ResetPasswordModel();
-            _PasswordReseter.ResetPassword(userId, resetPassword);
-            
-            return View(resetPassword);
+
+
+            return Redirect("/resetPassword");
+
         }
         
         
