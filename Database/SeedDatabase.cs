@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using ABM_CMS.Models.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -16,9 +17,9 @@ namespace ABM_CMS.Database
             
                 if (!context.UserRoles.Any(user => user.RoleId == "1"))
                 {
-                    var userManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
+                    var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
                 
-                    var adminUser = new IdentityUser()
+                    var adminUser = new ApplicationUser()
                     {
                         SecurityStamp = Guid.NewGuid().ToString(),
                         UserName = "Admin",

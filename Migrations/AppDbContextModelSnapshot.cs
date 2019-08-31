@@ -46,6 +46,26 @@ namespace ABM_CMS.Migrations
                     b.ToTable("RefreshTokens");
                 });
 
+            modelBuilder.Entity("ABM_CMS.Models.Token.UserToken", b =>
+                {
+                    b.Property<string>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Purpose");
+
+                    b.Property<string>("Token");
+
+                    b.Property<string>("TokenProvider");
+
+                    b.Property<string>("UserId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserTokens");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -248,9 +268,16 @@ namespace ABM_CMS.Migrations
             modelBuilder.Entity("ABM_CMS.Models.Token.RefreshTokenModel", b =>
                 {
                     b.HasOne("ABM_CMS.Models.Identity.ApplicationUser", "User")
-                        .WithMany("Tokens")
+                        .WithMany("RefreshTokens")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("ABM_CMS.Models.Token.UserToken", b =>
+                {
+                    b.HasOne("ABM_CMS.Models.Identity.ApplicationUser", "User")
+                        .WithMany("UserTokens")
+                        .HasForeignKey("UserId");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

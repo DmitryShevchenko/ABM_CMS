@@ -9,6 +9,7 @@ namespace ABM_CMS.Models.Identity
         public string Notes { get; set; }
         public int Type { get; set; }
         public string DisplayName { get; set; }
-        public List<RefreshTokenModel> Tokens { get; set; }
+        public List<RefreshTokenModel> RefreshTokens { get; set; }
+        public List<UserToken> UserTokens { get; set; }
     }
 }
