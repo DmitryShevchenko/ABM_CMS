@@ -11,8 +11,11 @@ using Microsoft.Extensions.Options;
 using ABM_CMS.Models.Account;
 using ABM_CMS.Models.Identity;
 using ABM_CMS.Models.Password;
+using ABM_CMS.Models.Token;
 using Hangfire;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
+
 
 namespace ABM_CMS.Controllers
 {
@@ -69,7 +72,10 @@ namespace ABM_CMS.Controllers
                     "Please confirm your e-mail by clicking this link: <a href=\"" + callbackUrl + "\">click here</a>");*/
 
                 return Ok(new
-                    {userName = user.UserName, email = user.Email, status = 1, message = "Registration Successful"});
+                {
+                    userName = user.UserName, email = user.Email, status = 1, message = "Registration Successful",
+                    emailConfirmationToken = emailConfirmationToken
+                });
             }
 
             errorList.AddRange(result.Errors.Select(err => err.Description));
@@ -99,7 +105,7 @@ namespace ABM_CMS.Controllers
             return BadRequest(errorList);
         }
 
-        
+
         [HttpPost("[action]")]
         public async Task<IActionResult> ResetPassword([FromBody] string email)
         {
@@ -110,18 +116,25 @@ namespace ABM_CMS.Controllers
             if (user == null) return BadRequest(new {Error = $"User with Email: {email} are not Found"});
 
             var resetPasswordToken = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var callBackUrl = Url.Action("ResetPasswordView", "Notifications", new {userId = user.Id, token = resetPasswordToken},
+            _db.UserTokens.Add(new UserToken()
+            {
+                User = user, TokenProvider = _userManager.Options.Tokens.PasswordResetTokenProvider,
+                Purpose = "ResetPassword", Token = resetPasswordToken
+            });
+            await _db.SaveChangesAsync();
+            var callBackUrl = Url.Action("ResetPasswordView", "Notifications", new {token = resetPasswordToken},
                 protocol: HttpContext.Request.Scheme);
             BackgroundJob.Enqueue(() => _emailSender.Send(user.Email, "Confirm password change",
                 $"Please confirm your e-mail by clicking this link: <a href={callBackUrl}>click here</a>"));
 
             return Ok(new
             {
-                OkResult = "Check your email for a link to reset your password. If it doesn’t appear within a few minutes, check your spam folder."
+                OkResult =
+                    "Check your email for a link to reset your password. If it doesn’t appear within a few minutes, check your spam folder."
             });
         }
 
-        [HttpPost("ResetPasswordConfirm")]
+        /*[HttpPost("ResetPasswordConfirm")]
         public async Task<IActionResult> ResetPassword([FromBody] string userId, string token, string password)
         {
             if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(token) ||
@@ -136,12 +149,34 @@ namespace ABM_CMS.Controllers
             {
                 return Ok(new {OkResult = "New password set successfully."});
             }
-            
+
             var errorList = new List<string>();
             errorList.AddRange(result.Errors.Select(err => err.Description));
             return BadRequest(errorList);
-        }
+        }*/
+        [HttpPost("ResetPasswordConfirm")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordModel model)
+        {
+            using (_db)
+            {
+                var userToken = await _db.UserTokens.FirstAsync(t => t.Token == model.Token);
+                var user = await _userManager.FindByIdAsync(userToken.UserId);
 
+                if (user == null) return BadRequest(new {Error = $"User with Email: {userToken.UserId} are not Found"});
+
+                var result = await _userManager.ResetPasswordAsync(user, userToken.Token, model.Password);
+                if (result.Succeeded)
+                {
+                    _db.UserTokens.Remove(userToken);
+                    await _db.SaveChangesAsync();
+                    return Ok(new {OkResult = "New password set successfully."});
+                }
+
+                var errorList = new List<string>();
+                errorList.AddRange(result.Errors.Select(err => err.Description));
+                return BadRequest(errorList);
+            }
+        }
 
         [HttpGet("[action]")]
         public async Task<IActionResult> ConfirmEmail(string userid, string emailConfirmationToken)

@@ -1,3 +1,7 @@
+using System;
+using System.Security.Policy;
+using System.Text;
+using System.Text.Encodings.Web;
 using ABM_CMS.Interfaces;
 using ABM_CMS.Models.Password;
 using ABM_CMS.Pages;
@@ -8,12 +12,6 @@ namespace ABM_CMS.Controllers
 {
     public class NotificationsController : Controller
     {
-        public NotificationsController(IPasswordReseter passwordReseter)
-        {
-            _passwordReseter = passwordReseter;
-        }
-
-        private readonly IPasswordReseter _passwordReseter;
         public IActionResult EmailConfirmed(string userId, string emailConfirmationToken) 
         {
             if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(emailConfirmationToken))
@@ -25,16 +23,14 @@ namespace ABM_CMS.Controllers
             
         }
 
-        public IActionResult ResetPasswordView(string userId, string token)
+        public IActionResult ResetPasswordView(string token)
         {
-            if (string.IsNullOrWhiteSpace(userId))
+            if (string.IsNullOrWhiteSpace(token))
             {
                 // 404 not found page
             }
-
-
-            return Redirect("/resetPassword");
-
+            
+            return Redirect($"/resetPassword/{UrlEncoder.Default.Encode(token)}");
         }
         
         

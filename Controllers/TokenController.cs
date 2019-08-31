@@ -162,6 +162,45 @@ namespace ABM_CMS.Controllers
                 ExpiryTime = DateTime.UtcNow.AddMinutes(90),
             };
         }
+        
+        [HttpPost("[action]")]
+        public async Task<IActionResult> VerifyUserToken([FromBody] string token)
+        {
+            using (_db)
+            {
+                try
+                {
+                    var userTokenData = _db.UserTokens.First(t => t.Token == token);
+                    var user = await _userManager.FindByIdAsync(userTokenData.UserId);
+                    var result = await _userManager.VerifyUserTokenAsync(user, userTokenData.TokenProvider,
+                        userTokenData.Purpose, userTokenData.Token);
+
+                    if (result)
+                        return Ok(new
+                        {
+                            UserName = user.UserName,
+                            Token = userTokenData.Token
+                        });
+
+                    _db.Remove(userTokenData);
+                    await _db.SaveChangesAsync();
+                    return BadRequest(new
+                    {
+                        Error = "Invalid token.",
+                        Message = "It looks like you clicked on an invalid password reset link. Please try again."
+                    });
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    return BadRequest(new
+                    {
+                        Error = "Invalid token.",
+                        Message = "It looks like you clicked on an invalid password reset link. Please try again."
+                    });
+                }
+            }
+        }
 
         /// <summary>
         /// Method to Refresh JWT and Refresh Token.
