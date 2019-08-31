@@ -4,7 +4,10 @@
   "private": true,
   "dependencies": {
     "bootstrap": "^4.3.1",
+    "isomorphic-fetch": "^2.2.1",
     "jquery": "3.4.0",
+    "prop-types": "latest",
+    "query-string": "latest",
     "react": "^16.0.0",
     "react-dom": "^16.2.1",
     "react-redux": "^5.0.6",
@@ -16,8 +19,8 @@
     "redux": "^3.7.2",
     "redux-thunk": "^2.2.0",
     "rimraf": "^2.6.2",
-    "validator": "^11.1.0",
-    "prop-types": "latest"
+    "semantic-ui-css": "^2.4.1",
+    "validator": "^11.1.0"
   },
   "devDependencies": {
     "ajv": "^6.0.0",

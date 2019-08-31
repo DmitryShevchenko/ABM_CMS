@@ -20,13 +20,18 @@
     <ItemGroup>
         <!-- Don't publish the SPA source files, but do show them in the project files list -->
         <Content Remove="$(SpaRoot)**" />
+        <Content Include="ClientApp\src\Client.js" />
         <Content Include="ClientApp\src\components\Auth\AuthForm.js" />
         <Content Include="ClientApp\src\components\Auth\form.css" />
         <Content Include="ClientApp\src\components\Auth\LoginFrom.js" />
         <Content Include="ClientApp\src\components\Auth\RegistrationForm.js" />
+        <Content Include="ClientApp\src\components\Auth\ResetPassword\ConfirmPassword.js" />
+        <Content Include="ClientApp\src\components\Auth\ResetPassword\ResetPassword.js" />
         <Content Include="ClientApp\src\components\From\Field.css" />
         <Content Include="ClientApp\src\components\From\Field.js" />
+        <Content Include="ClientApp\src\PrivateRoute.js" />
         <Content Include="ClientApp\src\store\Login.js" />
+        <Content Include="ClientApp\src\store\ResetPassword.js" />
         <None Remove="$(SpaRoot)**" />
         <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
     </ItemGroup>

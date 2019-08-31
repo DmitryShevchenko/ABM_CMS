@@ -15,6 +15,7 @@ export default class Field extends Component {
         onChange: PropTypes.func.isRequired,
         icon: PropTypes.string,
         password_reset: PropTypes.bool,
+        type: PropTypes.string,
     };
 
     UNSAFE_componentWillReceiveProps(update) {
@@ -48,7 +49,7 @@ export default class Field extends Component {
                     </div>
                     <div className={this.props.icon ? "ui left icon input" : ""}>
                         <input placeholder={this.props.placeholder} value={this.props.value}
-                               onChange={this.onInputChange}/>
+                               onChange={this.onInputChange} type={this.props.type}/>
                         <i className={this.props.icon}/>
                     </div>
 

@@ -6,6 +6,9 @@ import Counter from './components/Counter';
 import FetchData from './components/FetchData';
 import LoginFrom from './components/Auth/LoginFrom';
 import RegistrationForm from './components/Auth/RegistrationForm';
+import ResetPassword from './components/Auth/ResetPassword/ResetPassword';
+import ConfirmPassword from './components/Auth/ResetPassword/ConfirmPassword';
+import PrivateRoute from '../src/PrivateRoute';
 
 export default () => (
   <Layout>
@@ -14,5 +17,7 @@ export default () => (
     <Route path='/fetch-data/:startDateIndex?' component={FetchData} />
     <Route path='/login' component={LoginFrom} />
     <Route path='/registration' component={RegistrationForm} />
+    <Route path='/resetPassword/:token?' component={ResetPassword} />
+    {/*<PrivateRoute path='/resetPassword' component={ResetPassword}/>*/}
   </Layout>
 );
