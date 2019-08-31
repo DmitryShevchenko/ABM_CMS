@@ -1,5 +1,3 @@
-using System;
-using ABM_CMS.Models;
 using ABM_CMS.Models.Token;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -28,5 +26,6 @@ namespace ABM_CMS.Database
         }
         
         public DbSet<RefreshTokenModel> RefreshTokens { get; set; }
+        public DbSet<UserToken> UserTokens { get; set; }
     }
 }
