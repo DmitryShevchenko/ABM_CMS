@@ -37,7 +37,7 @@ function resetPasswordConfirmRequestError(err) {
 export const actionCreators = {
     resetPassword: (data) => (dispatch) => {
         dispatch(resetPasswordRequest());
-        apiClient.resetPasswordFetchRequest(data)
+        apiClient.forgotPasswordRequest(data)
             .then(res => dispatch(resetPasswordRequestSucceed(res)))
             .catch(err => dispatch(resetPasswordRequestError(err)));
     },
@@ -51,9 +51,9 @@ export const actionCreators = {
 };
 
 const apiClient = {
-    resetPasswordFetchRequest: async (data) => {
+    forgotPasswordRequest: async (data) => {
         debugger;
-        return await fetch('api/account/ResetPassword', {
+        return await fetch('api/account/ForgotPassword', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(data),
@@ -63,7 +63,7 @@ const apiClient = {
 
     resetPasswordConfirmFetchRequest: async (data) => {
         debugger;
-        return await fetch('api/account/ResetPasswordConfirm', {
+        return await fetch('api/account/ResetPassword', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(data),

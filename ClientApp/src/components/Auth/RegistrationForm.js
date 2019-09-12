@@ -1,7 +1,7 @@
 import isEmail from "validator/lib/isEmail";
 import {connect} from "react-redux";
 import React, {Component} from "react";
-import { bindActionCreators } from 'redux';
+/*import { bindActionCreators } from 'redux';*/
 //import {actionCreators} from "../../store/Register";
 import Field from "../From/Field";
 

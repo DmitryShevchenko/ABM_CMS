@@ -7,8 +7,6 @@ import FetchData from './components/FetchData';
 import LoginFrom from './components/Auth/LoginFrom';
 import RegistrationForm from './components/Auth/RegistrationForm';
 import ResetPassword from './components/Auth/ResetPassword/ResetPassword';
-import ConfirmPassword from './components/Auth/ResetPassword/ConfirmPassword';
-import PrivateRoute from '../src/PrivateRoute';
 
 export default () => (
   <Layout>

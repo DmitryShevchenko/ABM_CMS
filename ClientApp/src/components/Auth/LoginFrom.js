@@ -4,6 +4,8 @@ import Field from "../From/Field"
 import {bindActionCreators} from 'redux';
 import {actionCreators} from "../../store/Login";
 import './form.css'
+import GoogleLogin from 'react-google-login';
+import config from '../../config';
 
 class LoginFrom extends Component {
 
@@ -21,7 +23,7 @@ class LoginFrom extends Component {
 
     onFormSubmit = (event) => {
         event.preventDefault();
-        this.props.login(this.state.fields);
+        this.props.loginAction(this.state.fields);
     };
 
 
@@ -34,6 +36,19 @@ class LoginFrom extends Component {
 
         this.setState({fields, fieldErrors});
     };
+
+    googleResponse = (response) => {
+        if (!response.tokenId) {
+            console.error("Unable to get tokenId from Google", response);
+            return;
+        }
+
+       // const token = new Blob([JSON.stringify({tokenId: response.tokenId}, null, 2)], {type: 'application/json'});
+        const token = JSON.stringify(response.tokenId);
+        this.props.gLoginAction(token);
+
+    }
+
 
     render() {
         document.body.className = "session-authentication";
@@ -70,11 +85,23 @@ class LoginFrom extends Component {
                     </div>
                     <p className="create-account-callout mt-3">New to App? <a href="/register">Create an account.</a>
                     </p>
+                    <GoogleLogin
+                        clientId={config.GOOGLE_CLIENT_ID}
+                        render={renderProps => (
+                            <button onClick={renderProps.onClick} disabled={renderProps.disabled}>This is my custom
+                                Google button</button>
+                        )}
+                        buttonText="Login"
+                        onSuccess={this.googleResponse}
+                        onFailure={this.googleResponse}
+                        cookiePolicy={'single_host_origin'}
+                    />
                 </div>
             </div>
         );
     }
 }
+
 
 export default connect(
     state => state.login,

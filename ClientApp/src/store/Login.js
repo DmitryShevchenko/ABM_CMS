@@ -1,3 +1,5 @@
+import config from '../config';
+
 const LOGIN_REQUEST = "LOGIN_REQUEST";
 
 function loginRequest() {
@@ -16,23 +18,55 @@ function loginRequestError(err) {
     return {type: LOGIN_REQUEST_SUCCEED, payload: err}
 }
 
+const G_LOGIN_REQUEST = "G_LOGIN_REQUEST";
+
+function gLoginRequest() {
+    return {type: G_LOGIN_REQUEST}
+}
+
+const G_LOGIN_REQUEST_SUCCEED = "G_LOGIN_REQUEST_SUCCEED";
+
+function gLoginRequestSucceed(data) {
+    return {type: G_LOGIN_REQUEST_SUCCEED, payload: data}
+}
+
+const G_LOGIN_REQUEST_ERROR = "G_LOGIN_REQUEST_ERROR";
+
+function gLoginRequestError(err) {
+    return {type: G_LOGIN_REQUEST_ERROR, payload: err}
+}
+
 export const actionCreators = {
-    login: (data) => (dispatch) => {
+    loginAction: (data) => (dispatch) => {
         dispatch(loginRequest());
-        apiClient.loginFetchRequest(data)
+        apiClient.login(data)
             .then(res => dispatch(loginRequestSucceed(res)))
             .catch(err => dispatch(loginRequestError(err)));
+    },
+    gLoginAction: (data) => (dispatch) => {
+        dispatch(gLoginRequest());
+        apiClient.gLogin(data).then(res => dispatch(gLoginRequestSucceed(res.token)))
     }
 };
 
 const apiClient = {
-    loginFetchRequest: async (data) => {
+    login: async (data) => {
         return await fetch('api/account/login', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(data),
         }).then(res => res.json())
             .catch(err => console.log('Error', err))
+    },
+    gLogin: async (data) => {
+        debugger;
+        return await fetch(config.GOOGLE_AUTH_CALLBACK_URL, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            mode: "cors",
+            cache: "default",
+            body: data
+        }).then(res => res.json());
     }
 };
 
@@ -47,29 +81,30 @@ const initialState = {
             statusCode: null,
         },
     },
-    isLoading: false,    
+    user: '',
+    isAuthenticated: false,
+    isLoading: false,
 };
 
 export const reducer = (state, action) => {
     state = state || initialState;
     switch (action.type) {
         case LOGIN_REQUEST:
-            return{
+            return {
                 ...state,
                 isLoading: true
             };
         case LOGIN_REQUEST_SUCCEED:
-            debugger;
             return {
                 ...state, isLoading: false, serverAnswer: action.payload
             };
-        case LOGIN_REQUEST_ERROR:
+        case G_LOGIN_REQUEST_SUCCEED:
             return {
-                ...state, isLoading: false, serverAnswer: action.payload
-            };
+                ...state, user: action.payload, isAuthenticated: true
+            };       
         default:
             return state;
-            
+
     }
 };
 

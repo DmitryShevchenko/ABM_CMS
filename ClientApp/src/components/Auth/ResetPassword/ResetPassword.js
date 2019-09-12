@@ -1,12 +1,8 @@
 import {connect} from "react-redux";
 import React, {Component} from "react"
-import Field from "../../From/Field"
 import {bindActionCreators} from 'redux';
 import {actionCreators} from "../../../store/ResetPassword";
-import {Route} from 'react-router-dom';
-import queryString from 'query-string';
-import ConfirmPassword from "../ResetPassword/ConfirmPassword";
-import Layout from "../../Layout";
+
 
 class ResetPassword extends Component {
 
