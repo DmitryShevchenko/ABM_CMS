@@ -20,7 +20,7 @@ namespace ABM_CMS.Models.Token
         [Required]
         public GrantType GrantType { get; set; }
 
-        /// <summary>
+        /*/// <summary>
         /// ClientID of token (our Database or App) to sure that our token wan`t stolen.
         /// Must be specified in token settings.
         /// </summary>
@@ -29,7 +29,7 @@ namespace ABM_CMS.Models.Token
         /// <summary>
         /// Required value for user who requesting the token. 
         /// </summary>
-        public string UserName { get; set; }
+        public string UserName { get; set; }*/
         
         /// <summary>
         /// User Email.
