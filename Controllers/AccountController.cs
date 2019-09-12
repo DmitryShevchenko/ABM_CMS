@@ -45,20 +45,20 @@ namespace ABM_CMS.Controllers
             //Hold all errors related to registration
             var errorList = new List<string>();
 
-            var user = new ApplicationUser()
+            var user = new ApplicationUser() 
             {
                 Email = registerViewModel.Email,
                 UserName = registerViewModel.Email,
                 SecurityStamp = Guid.NewGuid().ToString(),
             };
-
+            
             //Auto check for already taken Email and UserName
             var result = await _userManager.CreateAsync(user, registerViewModel.Password);
 
             if (result.Succeeded)
             {
                 await _userManager.AddToRoleAsync(user, "User");
-
+                
                 // Conformation of email
                 var emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                 var callbackUrl = Url.Action("ConfirmEmail", "Account",
@@ -74,7 +74,7 @@ namespace ABM_CMS.Controllers
                 return Ok(new
                 {
                     userName = user.UserName, email = user.Email, status = 1, message = "Registration Successful",
-                    emailConfirmationToken = emailConfirmationToken
+                    emailConfirmationToken = emailConfirmationToken,
                 });
             }
 
@@ -88,7 +88,6 @@ namespace ABM_CMS.Controllers
         [Authorize(Policy = "RequireLoggedId")]
         public async Task<IActionResult> PasswordChange([FromBody] PasswordChangeModel model)
         {
-            var errorList = new List<string>();
             if (model == null) return new StatusCodeResult(500);
 
             var user = await _userManager.FindByEmailAsync(model.Email);
@@ -99,15 +98,13 @@ namespace ABM_CMS.Controllers
             {
                 return Ok(new {Message = "Password was Changed"});
             }
-
-            errorList.AddRange(result.Errors.Select(err => err.Description));
-
-            return BadRequest(errorList);
+            
+            return BadRequest(result.Errors.Select(err => err.Description).ToList());
         }
 
 
         [HttpPost("[action]")]
-        public async Task<IActionResult> ResetPassword([FromBody] string email)
+        public async Task<IActionResult> ForgotPassword([FromBody] string email)
         {
             if (string.IsNullOrWhiteSpace(email)) return BadRequest(new {Error = "User Email are Required"});
 
@@ -154,7 +151,8 @@ namespace ABM_CMS.Controllers
             errorList.AddRange(result.Errors.Select(err => err.Description));
             return BadRequest(errorList);
         }*/
-        [HttpPost("ResetPasswordConfirm")]
+        /*[HttpPost("ResetPasswordConfirm")]*/
+        [HttpPost("[action]")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordModel model)
         {
             using (_db)

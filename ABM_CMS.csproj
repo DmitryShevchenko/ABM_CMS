@@ -10,6 +10,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Google.Apis.Auth.AspNetCore" Version="1.41.1" />
         <PackageReference Include="Hangfire" Version="1.7.6" />
         <PackageReference Include="Microsoft.AspNetCore.App" />
         <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.2.0" />
@@ -29,6 +30,7 @@
         <Content Include="ClientApp\src\components\Auth\ResetPassword\ResetPassword.js" />
         <Content Include="ClientApp\src\components\From\Field.css" />
         <Content Include="ClientApp\src\components\From\Field.js" />
+        <Content Include="ClientApp\src\config.json" />
         <Content Include="ClientApp\src\PrivateRoute.js" />
         <Content Include="ClientApp\src\store\Login.js" />
         <Content Include="ClientApp\src\store\ResetPassword.js" />
@@ -37,6 +39,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="Services\Auth" />
       <Folder Include="wwwroot\EmailTemplate" />
     </ItemGroup>
 

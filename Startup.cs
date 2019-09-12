@@ -1,24 +1,21 @@
 using System;
 using System.Text;
-using System.Threading.Tasks;
 using ABM_CMS.Database;
 using ABM_CMS.Helpers;
 using ABM_CMS.Interfaces;
-using ABM_CMS.Models;
 using ABM_CMS.Models.Identity;
 using ABM_CMS.Services;
+using ABM_CMS.Services.Token;
 using Hangfire;
 using Hangfire.SqlServer;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -132,6 +129,7 @@ namespace ABM_CMS
             
             //Add Custom Services
             services.AddTransient<IEmailSender, EmailSender>();
+            services.AddScoped<ITokenCreator, TokenCreator>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
