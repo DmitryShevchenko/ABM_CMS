@@ -24,7 +24,7 @@
     "redux-thunk": "^2.2.0",
     "rimraf": "^2.6.2",
     "semantic-ui-css": "^2.4.1",
-    "validator": "^11.1.0"
+    "validator": "^13.7.0"
   },
   "devDependencies": {
     "ajv": "^6.0.0",
